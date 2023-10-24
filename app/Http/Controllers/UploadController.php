@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAttachmentRequest;
 use Illuminate\Http\Request;
 
 class UploadController extends Controller
@@ -11,12 +12,8 @@ class UploadController extends Controller
         return view('upload');
     }
 
-    public function store(Request $request)
+    public function store(StoreAttachmentRequest $request)
     {
-        $request->validate([
-            'attachment' => 'required|max:5000'
-        ]);
-
         $attachment = $request->file('attachment')->store(options: 'attachments');
 
         return redirect()->route('upload')
