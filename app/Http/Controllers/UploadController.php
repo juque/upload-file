@@ -11,6 +11,7 @@ class UploadController extends Controller
     }
 
     public function store(Request $request) {
-      dd($request->file('avatar'));
+        $attachment = $request->file('attachment')->store(options: 'attachments')
+        dd($attachment);
     }
 }
