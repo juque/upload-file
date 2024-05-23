@@ -28,52 +28,50 @@
 
 <script type="text/javascript">
 
-  const form = document.forms[0];
+  const onUploadProgress = event => {
+    const percentCompleted = Math.round((event.loaded * 100) / event.total);
+    document.querySelector('progress').value = Math.round(percentCompleted);
+    console.log('onUploadProgress', percentCompleted);
+  }
 
-  form.addEventListener('submit', (event) => {
+  const upload = async event => {
 
     event.preventDefault();
 
     const { currentTarget } = event;
 
-    const fileInput = currentTarget.attachment;
-    if ( !fileInput.files.length ) {
-      console.error('No file selected.');
-      return;
+    const formData = new FormData();
+
+    for (const file of currentTarget.attachment.files) {
+
+      formData.append('attachment', file);
+
     }
 
-    const file = fileInput.files[0];
-    const formData = new FormData();
-    formData.append('attachment', file);
-    const xhr = new XMLHttpRequest();
+    try {
 
-    xhr.upload.addEventListener('progress', (event) => {
-      if (event.lengthComputable) {
-        const percent = (event.loaded / event.total) * 100;
-        document.querySelector('progress').value = Math.round(percent);
-      }
-    });
+      const result = await axios.post( '{{ route("upload.store") }}', formData, { onUploadProgress });
 
-    xhr.addEventListener('load', (event) => {
-      const { currentTarget } = event;
-      if (currentTarget.readyState === 4) {
-        if (currentTarget.status === 200) {
-          console.log('All OK');
-        } else {
-          console.error(`Error: ${currentTarget.status} - ${currentTarget.statusText}`);
-        }
-      }
-    });
+      console.log('result is', result);
 
-    xhr.addEventListener('error', () => {
-      console.error('An error occurred during the upload.');
-    });
+    }
 
-    xhr.open('POST', '{{ route("upload.store") }}', true);
-    xhr.setRequestHeader('X-CSRF-Token', '{{ csrf_token() }}');
-    xhr.send(formData);
+    catch ( error ) {
 
-  });
+      console.error( error );
+
+    } 
+
+    finally {
+      console.log('Upload complete');
+    } 
+    
+  }
+
+  // const fileInput = document.querySelector("input[type=file]");
+  const form = document.querySelector('form');
+ 
+  form.addEventListener('submit', upload);
 
 
 </script>
